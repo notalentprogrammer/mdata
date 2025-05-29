@@ -1,70 +1,67 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Hello! Master!</title>
   <style>
     body {
-      background-color: #f5f5f5;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      padding: 30px;
-      color: #222;
+      padding: 2em;
     }
     h1 {
-      font-size: 48px;
-      margin-bottom: 20px;
+      font-size: 2.5em;
+      margin-bottom: 1em;
     }
     img {
-      width: 80%;
-      max-width: 800px;
+      max-width: 90%;
       height: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      margin-bottom: 30px;
+      border-radius: 10px;
+      margin-bottom: 2em;
     }
-    .json-block {
-      background: #fff;
+    pre {
+      background-color: #1e1e1e;
       text-align: left;
-      margin: 20px auto;
-      padding: 20px;
-      width: 80%;
+      padding: 1em;
+      margin: 1em auto;
       max-width: 800px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      font-family: monospace;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      overflow-x: auto;
+      font-size: 0.9em;
+      color: #dcdcdc;
     }
   </style>
 </head>
 <body>
   <h1>Hello! Master!</h1>
-  <img src="bg.jpeg" alt="Background Image" />
+  <img src="bg.jpeg" alt="Background Image">
 
-  <div id="json-container"></div>
+  <div id="output"></div>
 
   <script>
     const files = ["darkmode.json", "streaks1.json", "streaks2.json", "streaks3.json"];
-    const container = document.getElementById("json-container");
+    const container = document.getElementById("output");
 
-    async function loadAndDisplayJSON(filename) {
-      try {
-        const res = await fetch(filename + `?ts=${Date.now()}`);
-        const data = await res.json();
-        const block = document.createElement("div");
-        block.className = "json-block";
-        block.innerHTML = `<strong>${filename}</strong>\n\n${JSON.stringify(data, null, 2)}`;
-        container.appendChild(block);
-      } catch (e) {
-        const errorBlock = document.createElement("div");
-        errorBlock.className = "json-block";
-        errorBlock.innerHTML = `<strong>${filename}</strong>\n\n❌ 불러오기 실패: ${e}`;
-        container.appendChild(errorBlock);
+    async function loadFiles() {
+      for (const filename of files) {
+        try {
+          const res = await fetch(filename);
+          const json = await res.json();
+
+          const pre = document.createElement("pre");
+          pre.textContent = `${filename}\n\n${JSON.stringify(json, null, 2)}`;
+          container.appendChild(pre);
+        } catch (e) {
+          const err = document.createElement("pre");
+          err.textContent = `${filename} 로딩 실패: ${e}`;
+          container.appendChild(err);
+        }
       }
     }
 
-    files.forEach(loadAndDisplayJSON);
+    loadFiles();
   </script>
 </body>
 </html>
