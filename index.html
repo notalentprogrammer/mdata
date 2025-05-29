@@ -3,23 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Hello! Master!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <style>
     body {
       background-color: #121212;
       color: #f0f0f0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Orbitron', sans-serif;
       text-align: center;
       padding: 2em;
+      overflow-x: hidden;
     }
     h1 {
       font-size: 2.5em;
       margin-bottom: 1em;
+      transition: all 0.5s ease;
     }
     img {
       max-width: 90%;
       height: auto;
       border-radius: 10px;
       margin-bottom: 2em;
+      cursor: pointer;
+      transition: opacity 1s ease;
     }
     pre {
       background-color: #1e1e1e;
@@ -31,20 +36,41 @@
       overflow-x: auto;
       font-size: 0.9em;
       color: #dcdcdc;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .visible pre {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
 <body>
-  <h1>Hello! Master!</h1>
-  <img src="bg.jpeg" alt="Background Image">
+  <h1 id="header">Hello! Master!</h1>
+  <img id="mainImage" src="bg.jpeg" alt="Background Image">
 
-  <div id="output"></div>
+  <div id="output" class=""></div>
 
   <script>
     const files = ["darkmode.json", "streaks1.json", "streaks2.json", "streaks3.json"];
+    const header = document.getElementById("header");
+    const image = document.getElementById("mainImage");
     const container = document.getElementById("output");
 
-    async function loadFiles() {
+    image.addEventListener("click", async () => {
+      // 이미지 사라지기
+      image.style.opacity = 0;
+      // 텍스트 변경
+      header.textContent = "Data List";
+
+      // 이미지 요소 제거
+      setTimeout(() => {
+        image.remove();
+        container.classList.add("visible");
+      }, 1000);
+
+      // 파일 로드
       for (const filename of files) {
         try {
           const res = await fetch(filename);
@@ -59,9 +85,7 @@
           container.appendChild(err);
         }
       }
-    }
-
-    loadFiles();
+    });
   </script>
 </body>
 </html>
