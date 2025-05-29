@@ -1,7 +1,70 @@
 <!DOCTYPE html>
-<html>
-  <head><title>My JSON Hosting</title></head>
-  <body>
-    <h1>Miku chan! Daisuki!!</h1>
-  </body>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hello! Master!</title>
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 30px;
+      color: #222;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    img {
+      width: 80%;
+      max-width: 800px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
+    }
+    .json-block {
+      background: #fff;
+      text-align: left;
+      margin: 20px auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello! Master!</h1>
+  <img src="bg.jpg" alt="Background Image" />
+
+  <div id="json-container"></div>
+
+  <script>
+    const files = ["darkmode.json", "streaks1.json", "streaks2.json", "streaks3.json"];
+    const container = document.getElementById("json-container");
+
+    async function loadAndDisplayJSON(filename) {
+      try {
+        const res = await fetch(filename + `?ts=${Date.now()}`);
+        const data = await res.json();
+        const block = document.createElement("div");
+        block.className = "json-block";
+        block.innerHTML = `<strong>${filename}</strong>\n\n${JSON.stringify(data, null, 2)}`;
+        container.appendChild(block);
+      } catch (e) {
+        const errorBlock = document.createElement("div");
+        errorBlock.className = "json-block";
+        errorBlock.innerHTML = `<strong>${filename}</strong>\n\n❌ 불러오기 실패: ${e}`;
+        container.appendChild(errorBlock);
+      }
+    }
+
+    files.forEach(loadAndDisplayJSON);
+  </script>
+</body>
 </html>
