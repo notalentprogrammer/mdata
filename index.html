@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hello! Master!</title>
+  <title>Touch Me 😏✨</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -17,6 +17,19 @@
       font-size: 5.5em;
       margin-bottom: 1em;
       transition: all 0.5s ease;
+      letter-spacing: 0.05em;
+    }
+    .tease {
+      font-size: 1.5em;
+      color: #ff80ab;
+      margin-left: 0.2em;
+      vertical-align: middle;
+      animation: wink 1.2s infinite alternate;
+    }
+    @keyframes wink {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0.5; }
     }
     img {
       max-width: 100%;
@@ -26,66 +39,250 @@
       cursor: pointer;
       transition: opacity 1s ease;
     }
-    pre {
-      background-color: #1e1e1e;
-      text-align: left;
-      padding: 1em;
-      margin: 1em auto;
-      max-width: 800px;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-size: 0.9em;
-      color: #dcdcdc;
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2em;
+      margin-top: 2em;
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      transition: opacity 0.7s, transform 0.7s;
     }
-    .visible pre {
+    .dashboard.visible {
       opacity: 1;
       transform: translateY(0);
+    }
+    .block {
+      background: #23232b;
+      border-radius: 16px;
+      padding: 1.5em 2em;
+      min-width: 230px;
+      min-height: 180px;
+      box-shadow: 0 4px 24px #0006;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .block-title {
+      font-size: 1.4em;
+      margin-bottom: 1em;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      margin: 0.5em 0;
+      font-size: 1.15em;
+    }
+    .item-label {
+      flex: 1;
+      text-align: left;
+    }
+    .status {
+      margin-left: 1em;
+      font-size: 1.2em;
+    }
+    .done { color: #00e676; }      /* green */
+    .notdone { color: #ff5252; }   /* red */
+    .gauge {
+      display: flex;
+      gap: 0.2em;
+      margin-left: 1em;
+    }
+    .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #333;
+      border: 2px solid #666;
+      display: inline-block;
+    }
+    .dot.filled {
+      background: #ffd600;
+      border-color: #fffde7;
+      box-shadow: 0 0 10px #ffd60080;
+    }
+    /* 7-day score badge */
+    .score-badge {
+      position: fixed;
+      top: 2em;
+      right: 2em;
+      background: linear-gradient(135deg, #ff80ab 60%, #ffd600 100%);
+      color: #222;
+      font-size: 2.5em;
+      font-weight: bold;
+      border-radius: 1.5em;
+      padding: 0.4em 1.1em;
+      box-shadow: 0 8px 32px #0008;
+      z-index: 100;
+      border: 3px solid #fffde7;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.7s, transform 0.7s;
+    }
+    .score-badge.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .dashboard { flex-direction: column; align-items: center; }
+      .score-badge { position: static; margin: 1.5em auto; }
     }
   </style>
 </head>
 <body>
-  <h1 id="header">Hello! Master!</h1>
+  <h1 id="header">Touch Me <span class="tease">😏✨</span></h1>
   <img id="mainImage" src="bg.jpeg" alt="Background Image">
 
-  <div id="output" class=""></div>
+  <div id="scoreBadge" class="score-badge"></div>
+  <div id="dashboard" class="dashboard"></div>
 
   <script>
-    const files = ["darkmode.json", "streaks1.json", "streaks2.json", "streaks3.json"];
+    // File list
+    const files = [
+      "darkmode.json",
+      "streaks1.json",
+      "streaks2.json",
+      "streaks3.json"
+    ];
+    // 항목 순서 및 정보
+    const config = {
+      darkmode: [
+        { key: "pad", label: "Pad" },
+        { key: "phone", label: "Phone" }
+      ],
+      streaks1: [
+        { key: "QT", label: "QT", type: "bool" },
+        { key: "coding", label: "Coding", type: "bool" },
+        { key: "kegel", label: "Kegel", type: "gauge", max: 3 },
+        { key: "anki", label: "Anki", type: "bool" }
+      ],
+      streaks2: [
+        { key: "morning", label: "Morning Exercise", type: "bool" },
+        { key: "jump", label: "Jump Rope", type: "bool" },
+        { key: "logseq", label: "logseq", type: "bool" },
+        { key: "aTracker", label: "aTracker", type: "bool" }
+      ],
+      streaks3: [
+        { key: "reading", label: "Reading", type: "bool" },
+        { key: "instrument", label: "Instrument", type: "gauge", max: 2 },
+        { key: "study", label: "Study", type: "gauge", max: 5 }
+      ]
+    };
+
+    // 파일별 블록 제목
+    const blockTitles = {
+      darkmode: "Dark Mode",
+      streaks1: "Streaks 1",
+      streaks2: "Streaks 2",
+      streaks3: "Streaks 3"
+    };
+
+    // 파일명과 config 매칭
+    function getConfigName(filename) {
+      if (filename.startsWith("darkmode")) return "darkmode";
+      if (filename.startsWith("streaks1")) return "streaks1";
+      if (filename.startsWith("streaks2")) return "streaks2";
+      if (filename.startsWith("streaks3")) return "streaks3";
+      return "";
+    }
+
     const header = document.getElementById("header");
     const image = document.getElementById("mainImage");
-    const container = document.getElementById("output");
+    const dashboard = document.getElementById("dashboard");
+    const scoreBadge = document.getElementById("scoreBadge");
+
+    // 이모티콘 효과
+    let tease = document.querySelector('.tease');
+    if (tease) {
+      tease.addEventListener('mouseover', () => { tease.textContent = "😉💖"; });
+      tease.addEventListener('mouseout', () => { tease.textContent = "😏✨"; });
+    }
 
     image.addEventListener("click", async () => {
-      // 이미지 사라지기
       image.style.opacity = 0;
-      // 텍스트 변경
       header.textContent = "Data List";
-
-      // 이미지 요소 제거
       setTimeout(() => {
         image.remove();
-        container.classList.add("visible");
+        dashboard.classList.add("visible");
+        scoreBadge.classList.add("visible");
       }, 1000);
 
-      // 파일 로드
+      let allData = {};
+
+      // 파일 불러오기
       for (const filename of files) {
         try {
           const res = await fetch(filename);
           const json = await res.json();
-
-          const pre = document.createElement("pre");
-          pre.textContent = `${filename}\n\n${JSON.stringify(json, null, 2)}`;
-          container.appendChild(pre);
+          allData[getConfigName(filename)] = json;
         } catch (e) {
-          const err = document.createElement("pre");
-          err.textContent = `${filename} 로딩 실패: ${e}`;
-          container.appendChild(err);
+          allData[getConfigName(filename)] = null;
         }
       }
+
+      // 7일점수(7-day score)는 streaks3에 있다고 가정
+      let score = allData.streaks3 && allData.streaks3['score'] ? allData.streaks3['score'] : null;
+      if (score !== null) {
+        scoreBadge.innerHTML = `7-Day Score<br><span>${score} / 100</span>`;
+      } else {
+        scoreBadge.innerHTML = `7-Day Score<br><span>?</span>`;
+      }
+
+      // 블록 생성
+      for (const [confKey, items] of Object.entries(config)) {
+        const block = document.createElement('div');
+        block.className = "block";
+        const title = document.createElement('div');
+        title.className = "block-title";
+        title.textContent = blockTitles[confKey] || confKey;
+        block.appendChild(title);
+
+        const data = allData[confKey] || {};
+
+        for (const item of items) {
+          const row = document.createElement('div');
+          row.className = "item-row";
+          const label = document.createElement('span');
+          label.className = "item-label";
+          label.textContent = item.label;
+          row.appendChild(label);
+
+          // 상태 표시
+          if (item.type === "bool" || confKey === "darkmode") {
+            // darkmode는 bool로 처리
+            let val = data[item.key];
+            let icon = (val === true || val === "true" || val === 1 || val === "on" || val === "dark") ?
+              `<span class="status done">✔️</span>` :
+              `<span class="status notdone">✖️</span>`;
+            row.innerHTML += icon;
+          } else if (item.type === "gauge") {
+            let val = parseInt(data[item.key] || 0, 10);
+            let max = item.max;
+            let gauge = '<span class="gauge">';
+            for (let i = 1; i <= max; i++) {
+              gauge += `<span class="dot${i <= val ? ' filled' : ''}"></span>`;
+            }
+            gauge += '</span>';
+            row.innerHTML += gauge;
+          }
+          block.appendChild(row);
+        }
+        dashboard.appendChild(block);
+      }
     });
+
+    // Footnote (for developer)
+    // - "Touch Me" header is playful with emoji.  
+    // - Each block visualizes the status of JSON files.  
+    // - 7-day score is shown separately for quick reference.
   </script>
 </body>
 </html>
