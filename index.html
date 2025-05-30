@@ -188,9 +188,9 @@
       ],
       streaks1: [
         { key: "QT", label: "QT", type: "bool" },
-        { key: "coding", label: "coding", type: "bool" },
-        { key: "kegel", label: "kegel", type: "progress", max: 3 },
-        { key: "anki", label: "anki", type: "bool" }
+        { key: "Coding", label: "Coding", type: "bool" },
+        { key: "Kegel", label: "Kegel", type: "progress", max: 3 },
+        { key: "Anki", label: "Anki", type: "bool" }
       ],
       streaks2: [
         { key: "아침운동", label: "아침운동", type: "bool" },
@@ -235,7 +235,7 @@
 
     image.addEventListener("click", async () => {
       image.style.opacity = 0;
-      header.textContent = "My Streaks Data List";
+      header.textContent = "Data List";
       setTimeout(() => {
         image.remove();
         dashboard.classList.add("visible");
@@ -302,20 +302,25 @@
             row.innerHTML += icon;
           } else if (item.type === "bool") {
             let val = data[item.key];
-            let icon = (val === true || val === "true" || val === 1) ?
-              `<span class="status done">✔️</span>` :
-              `<span class="status notdone">✖️</span>`;
-            row.innerHTML += icon;
+            let statusSpan = document.createElement('span');
+            statusSpan.className = "status " + ((val === true || val === "true" || val === 1) ? "done" : "notdone");
+            statusSpan.textContent = (val === true || val === "true" || val === 1) ? "✔️" : "✖️";
+            row.appendChild(statusSpan);
           } else if (item.type === "progress") {
             let val = parseInt(data[item.key] || 0, 10);
             let max = item.max;
             val = Math.max(0, Math.min(val, max));
             let percent = (val / max) * 100;
-            row.innerHTML += `
-              <span class="progress-bar" title="${val} / ${max}">
-                <span class="progress-fill" style="width:${percent}%;"></span>
-              </span>
-            `;
+            let bar = document.createElement('span');
+            bar.className = "progress-bar";
+            bar.title = `${val} / ${max}`;
+
+            let fill = document.createElement('span');
+            fill.className = "progress-fill";
+            fill.style.width = `${percent}%`;
+
+            bar.appendChild(fill);
+            row.appendChild(bar);
           }
           block.appendChild(row);
         }
