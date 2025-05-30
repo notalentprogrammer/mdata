@@ -14,10 +14,11 @@
       overflow-x: hidden;
     }
     h1 {
-      font-size: 5.5em;
+      font-size: 4.5em;
       margin-bottom: 1em;
       transition: all 0.5s ease;
       letter-spacing: 0.05em;
+      word-break: keep-all;
     }
     .tease {
       font-size: 1.5em;
@@ -91,9 +92,10 @@
     .status {
       margin-left: 1em;
       font-size: 1.2em;
+      vertical-align: middle;
     }
-    .done { color: #00e676; }
-    .notdone { color: #ff5252; }
+    .done { color: #00e676; }      /* green */
+    .notdone { color: #ff5252; }   /* red */
     /* Progress bar */
     .progress-bar {
       width: 80px;
@@ -109,15 +111,21 @@
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #ffd600 60%, #ff80ab 100%);
       border-radius: 8px 0 0 8px;
       transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+      background: linear-gradient(
+        90deg,
+        #22e34d 0%,
+        #a8eb12 60%,
+        #f7e733 100%
+      );
+      /* iOS battery widget style */
     }
     /* 7-day score badge */
     .score-badge {
-      position: fixed;
-      top: 2em;
-      right: 2em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7em;
       background: linear-gradient(135deg, #ff80ab 60%, #ffd600 100%);
       color: #222;
       font-size: 2.2em;
@@ -125,14 +133,16 @@
       border-radius: 1.5em;
       padding: 0.4em 1.1em;
       box-shadow: 0 8px 32px #0008;
-      z-index: 100;
       border: 3px solid #fffde7;
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
+      margin: 2.5em auto 0 auto;
+      position: relative;
+      top: 0;
+      left: 0;
+      right: 0;
       opacity: 0;
       transform: scale(0.9);
       transition: opacity 0.7s, transform 0.7s;
+      justify-content: center;
     }
     .score-badge.visible {
       opacity: 1;
@@ -150,7 +160,7 @@
     /* Responsive */
     @media (max-width: 900px) {
       .dashboard { flex-direction: column; align-items: center; }
-      .score-badge { position: static; margin: 1.5em auto; }
+      .score-badge { position: static; margin: 1.5em auto 0 auto; }
     }
   </style>
 </head>
@@ -158,18 +168,19 @@
   <h1 id="header">Touch Me <span class="tease">😏✨</span></h1>
   <img id="mainImage" src="bg.jpeg" alt="Background Image">
 
-  <div id="scoreBadge" class="score-badge"></div>
   <div id="dashboard" class="dashboard"></div>
+  <div id="scoreBadge" class="score-badge"></div>
 
   <script>
-    // File list
+    // 파일 리스트 및 config
     const files = [
       "darkmode.json",
       "streaks1.json",
       "streaks2.json",
       "streaks3.json"
     ];
-    // 항목 순서 및 정보
+
+    // 한글 키와 라벨 그대로 사용
     const config = {
       darkmode: [
         { key: "pad", label: "Pad" },
@@ -177,24 +188,24 @@
       ],
       streaks1: [
         { key: "QT", label: "QT", type: "bool" },
-        { key: "coding", label: "Coding", type: "bool" },
-        { key: "kegel", label: "Kegel", type: "progress", max: 3 },
-        { key: "anki", label: "Anki", type: "bool" }
+        { key: "coding", label: "coding", type: "bool" },
+        { key: "kegel", label: "kegel", type: "progress", max: 3 },
+        { key: "anki", label: "anki", type: "bool" }
       ],
       streaks2: [
-        { key: "morning", label: "Morning Exercise", type: "bool" },
-        { key: "jump", label: "Jump Rope", type: "bool" },
-        { key: "logseq", label: "logseq", type: "bool" },
+        { key: "아침운동", label: "아침운동", type: "bool" },
+        { key: "줄넘기", label: "줄넘기", type: "bool" },
+        { key: "Logseq", label: "Logseq", type: "bool" },
         { key: "aTracker", label: "aTracker", type: "bool" }
       ],
       streaks3: [
-        { key: "reading", label: "Reading", type: "bool" },
-        { key: "instrument", label: "Instrument", type: "progress", max: 2 },
-        { key: "study", label: "Study", type: "progress", max: 5 }
+        { key: "독서", label: "독서", type: "bool" },
+        { key: "악기연습", label: "악기연습", type: "progress", max: 2 },
+        { key: "공부", label: "공부", type: "progress", max: 5 }
       ]
     };
 
-    // 파일별 블록 제목
+    // 블록 타이틀
     const blockTitles = {
       darkmode: "Dark Mode",
       streaks1: "Streaks 1",
@@ -202,7 +213,6 @@
       streaks3: "Streaks 3"
     };
 
-    // 파일명과 config 매칭
     function getConfigName(filename) {
       if (filename.startsWith("darkmode")) return "darkmode";
       if (filename.startsWith("streaks1")) return "streaks1";
@@ -245,9 +255,9 @@
         }
       }
 
-      // 7일점수(7-day score)는 streaks3에 있다고 가정
-      let score = allData.streaks3 && typeof allData.streaks3['7일점수'] !== "undefined"
-        ? allData.streaks3['7일점수']
+      // 7일점수는 streaks3에 "7일점수" 키로 있다고 가정
+      let score = allData.streaks3 && typeof allData.streaks3["7일점수"] !== "undefined"
+        ? allData.streaks3["7일점수"]
         : null;
       let scoreContent = "";
       if (score !== null && !isNaN(score)) {
@@ -258,6 +268,7 @@
       scoreBadge.innerHTML = scoreContent;
 
       // 블록 생성
+      dashboard.innerHTML = ""; // 초기화
       for (const [confKey, items] of Object.entries(config)) {
         const block = document.createElement('div');
         block.className = "block";
@@ -310,13 +321,19 @@
         }
         dashboard.appendChild(block);
       }
+
+      // 7일점수는 대시보드 아래에 중앙 정렬로 표시
+      scoreBadge.style.position = "static";
+      scoreBadge.style.margin = "2.5em auto 0 auto";
+      scoreBadge.style.display = "flex";
+      scoreBadge.style.justifyContent = "center";
     });
 
     // Footnote (for developer)
-    // - Dark/Light mode is shown as moon/sun emoji.
-    // - Progress types use a progress bar.
-    // - 7-day score displays properly, never just '?' if value exists.
-    // - All keys are left-aligned in each block.
+    // - Progress bar uses green/yellow iOS battery style.
+    // - Check is green, X is red.
+    // - 7-day score appears below data blocks, centered.
+    // - Key names use original Korean as provided.
   </script>
 </body>
 </html>
